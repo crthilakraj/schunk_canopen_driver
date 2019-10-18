@@ -158,6 +158,7 @@ SchunkCanopenNode::SchunkCanopenNode()
       else
       {
         m_controller->addNode<SchunkPowerBallNode>(chain[j], chain_names[i]);
+        m_controller->getNode<DS402Node>(chain[j])->setTransmissionFactor(transmission_factor);
       }
 
       std::string joint_name = "";
@@ -564,9 +565,12 @@ void SchunkCanopenNode::rosControlLoop()
       }
       else
       {
+        uint8_t node_counter = 0;
         for (size_t i = 0; i < m_chain_handles.size(); ++i)
         {
-          m_chain_handles[i]->setTarget(std::vector<float>(joint_msg.position.begin(), joint_msg.position.end()));
+          std::vector<DS301Node::Ptr> nodes = m_chain_handles[i]->getNodes();
+          m_chain_handles[i]->setTarget(std::vector<float>(joint_msg.position.begin() + node_counter, joint_msg.position.begin() + node_counter + nodes.size()));
+          node_counter += nodes.size();
         }
       }
     }
